@@ -41,10 +41,10 @@ void main(){
     expect(rr.paramsNames, ['controller', 'action']);
     var en = rr['en'];
     expect(en.regExp.pattern,r'^/([^/]+)(?:/([^/]+))?(?:\.html)?$');
-    expect(en.strf,'/%s/%s/%s');
+    expect(en.strf,'/%s/%s%s');
     var fr = rr['fr'];
     expect(fr.regExp.pattern,r'^/([^/]+)(?:/([^/]+))?(?:\.html)?$');
-    expect(fr.strf,'/%s/%s/%s');
+    expect(fr.strf,'/%s/%s%s');
   });
   
   test('Named param route', (){
@@ -55,11 +55,11 @@ void main(){
     expect(rr.paramsCount, 1);
     expect(rr.paramsNames, ['slug']);
     var en = rr['en'];
-    expect(en.regExp.pattern,r'^/post/([^/]+)\.htm$');
+    expect(en.regExp.pattern,r'^/post/([a-z\-]+)\.htm$');
     expect(en.strf,'/post/%s');
     var fr = rr['fr'];
-    expect(fr.regExp.pattern,r'^/article/([^/]+)\.htm$');
-    expect(fr.strf,'/post/%s');
+    expect(fr.regExp.pattern,r'^/article/([a-z\-]+)\.htm$');
+    expect(fr.strf,'/article/%s');
   });
   
   test('Find routes', (){

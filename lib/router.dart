@@ -22,7 +22,9 @@ class Router {
     
     final Function translate = (String lang, String string){
       String lstring = string.toLowerCase();
-      _routesTranslations.translate(string, lang);
+      String translation = _routesTranslations.translate(string, lang);
+      assert(translation != null);
+      return translation;
     };
     
     routes.forEach((String routeKey, List route){
@@ -52,7 +54,8 @@ class Router {
           for (String lang in allLangs) routeLangs[lang] = routeKey;
         } else {
           for (String lang in allLangs) {
-            routeLangs[lang] = routeKey.replaceAllMapped(translatableRoutePart,(Match m) => translate(lang,m[1]));
+            routeLangs[lang] = routeKey.replaceAllMapped(translatableRoutePart,
+                  (Match m) => '/'+translate(lang,m[1]));
           }
         }
       }
@@ -61,7 +64,8 @@ class Router {
       regExpNamedParam.allMatches(routeLangs[allLangs[0]])
         .forEach((Match m) => paramNames.add(m[2]));
       
-      var finalRoute = _routes[routeKey] = new RouterRoute(controllerAndAction[0], controllerAndAction[1], paramNames);
+      var finalRoute = _routes[routeKey] = 
+          new RouterRoute(controllerAndAction[0], controllerAndAction[1], paramNames);
       
       routeLangs.forEach((String lang, String routeLang){
         bool specialEnd, specialEnd2;
@@ -70,12 +74,19 @@ class Router {
         if (specialEnd = routeLang.endsWith('/*')) {
           routeLangRegExp = routeLang.substring(0, routeLang.length-2);
         } else if (specialEnd2 = routeLang.endsWith('/*)?')) {
-          routeLangRegExp = routeLang.substring(0, routeLang.length-4) + routeLang.substring(routeLang.length-2);
+          routeLangRegExp = routeLang.substring(0, routeLang.length-4)
+              + routeLang.substring(routeLang.length-2);
         } else {
           routeLangRegExp = routeLang;
         }
         
-        final String extensionRegExp = extension == null ? '': (extension == 'html' ? r'(?:\.html)?':'\.$extension');
+        routeLangRegExp = routeLangRegExp
+            .replaceAll('-',r'\-')
+            .replaceAll('*',r'(.*)')
+            .replaceAll('(',r'(?:');
+        
+        final String extensionRegExp = extension == null ? '': 
+          (extension == 'html' ? r'(?:\.html)?': r'\.' + extension);
         
         var replacedRegExp = routeLangRegExp.replaceAllMapped(regExpNamedParam,(Match m){
           if (m[1] != null) return m[0];
@@ -84,9 +95,11 @@ class Router {
             var paramDefVal = namedParamsDefinition[m[2]];
             if (paramDefVal is Map) {
               paramDefVal = paramDefVal[lang];
+              assert(paramDefVal != null);
             } else {
               if (translatableRouteNamedParamValue.hasMatch(paramDefVal)) {
-                paramDefVal.split('|').map((String s) => translate(lang, s)).join('|');
+                paramDefVal = paramDefVal.split('|')
+                    .map((String s) => translate(lang, s)).join('|');
               }
             }
             return paramDefVal == 'id' ? r'([0-9]+)' : '(' + paramDefVal.replaceAll('(','(?:') + ')';
@@ -103,6 +116,9 @@ class Router {
             .replaceAll('/*','%s')
             .trim()
             .replaceFirst(new RegExp(r'\/+$'),'');
+        if(routeLangStrf == '') {
+          routeLangStrf = '/';
+        }
         finalRoute[lang] = new RouterRouteLang(new RegExp('^${replacedRegExp}${extensionRegExp}\$'), routeLangStrf);
       });
       
