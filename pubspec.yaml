@@ -1,0 +1,11 @@
+name: springbok_router
+version: 0.1.0
+author: Christophe Hurpeau <christophe@hurpeau.com>
+description: Springbok Router for Dart
+homepage: https://github.com/christophehurpeau/dart-springbok_router
+documentation: https://github.com/christophehurpeau/dart-springbok_router/wiki
+environment:
+  sdk: '>=1.0.0 <2.0.0'
+dependencies:
+  unittest: '>=0.9.0 <0.10.0'
+  yaml: '>=0.9.0 <0.10.0'

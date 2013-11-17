@@ -1,0 +1,11 @@
+login:
+  en: login
+  fr: connexion
+
+post:
+  en: post
+  fr: article
+
+view:
+  en: view
+  fr: afficher
