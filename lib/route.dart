@@ -17,8 +17,8 @@ class Route{
   /// Named params
   final Map<String, String> namedParams;
   
-  /// Others params
-  final List<String> sParams;
+  /// Others simple params
+  final List<String> otherParams;
   
-  Route(this.all, this.controller, this.action, this.namedParams, this.sParams, this.extension);
+  Route(this.all, this.controller, this.action, this.namedParams, this.otherParams, this.extension);
 }

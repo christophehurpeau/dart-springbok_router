@@ -4,6 +4,9 @@ part './router_route.dart';
 part './route.dart';
 part './routes_translations.dart';
 
+final regExpStartingSlash = new RegExp(r'^/+');
+final regExpEndingSlash = new RegExp(r'/+$');
+
 class Router {
   final Map<String, RouterRoute> _routes = {};
   final RoutesTranslations _routesTranslations;
@@ -34,12 +37,12 @@ class Router {
       assert(controllerAndAction.length == 2);
       
       Map<String, String> namedParamsDefinition = route.length > 1 ? route[1] : null;
-      Map<String, String> routeLangs = route.length > 2 ? route[2] : null;
-      String extension = route.length > 3 ? route[3] : null;
+      final Map<String, String> routeLangs = route.length > 2 ? (route[2] == null ? {} : route[2]) : {};
+      final String extension = route.length > 3 ? route[3] : null;
       
       // -- Route langs --
       
-      if (routeLangs != null && routeLangs.length != 0) {
+      if (routeLangs.isNotEmpty) {
         for (String lang in allLangs) {
           if (!routeLangs.containsKey(lang)) {
             if (lang == 'en') routeLangs['en'] = routeKey;
@@ -47,9 +50,6 @@ class Router {
           }
         }
       } else {
-        if (routeLangs == null) {
-          routeLangs = {};
-        }
         if (!translatableRoutePart.hasMatch(routeKey)) {
           for (String lang in allLangs) routeLangs[lang] = routeKey;
         } else {
@@ -65,7 +65,7 @@ class Router {
         .forEach((Match m) => paramNames.add(m[2]));
       
       var finalRoute = _routes[routeKey] = 
-          new RouterRoute(controllerAndAction[0], controllerAndAction[1], paramNames);
+          new RouterRoute(controllerAndAction[0], controllerAndAction[1], extension != null, paramNames);
       
       routeLangs.forEach((String lang, String routeLang){
         bool specialEnd, specialEnd2;
@@ -86,7 +86,7 @@ class Router {
             .replaceAll('(',r'(?:');
         
         final String extensionRegExp = extension == null ? '': 
-          (extension == 'html' ? r'(?:\.html)?': r'\.' + extension);
+          (extension == 'html' ? r'(?:\.(html))?': r'\.(' + '$extension)');
         
         var replacedRegExp = routeLangRegExp.replaceAllMapped(regExpNamedParam,(Match m){
           if (m[1] != null) return m[0];
@@ -109,13 +109,13 @@ class Router {
             return r'([0-9]+)';
           }
           
-          return '([^\/]+)';
+          return r'([^/\.]+)';
         });
         var routeLangStrf = routeLang.replaceAll(new RegExp(r'(\:[a-zA-Z_]+)'),'%s')
             .replaceAll(new RegExp(r'[\?\(\)]+'),'')
             .replaceAll('/*','%s')
             .trim()
-            .replaceFirst(new RegExp(r'\/+$'),'');
+            .replaceFirst(regExpEndingSlash,'');
         if(routeLangStrf == '') {
           routeLangStrf = '/';
         }
@@ -123,5 +123,62 @@ class Router {
       });
       
     });
+  }
+  
+  
+  Route find(String all, [String lang = 'en']){
+    all = '/' + all.trim().replaceFirst(regExpStartingSlash,'').replaceFirst(regExpEndingSlash,'');
+    
+    for(RouterRoute route in _routes.values) { //_routes.values vs _routes.forEach ?
+      RouterRouteLang routeLang = route[lang];
+      assert(routeLang != null);
+      
+      Match match = routeLang.match(all);
+      if (match == null) continue;
+      
+      int groupCount = match.groupCount;
+      final extension = groupCount == 0 || !route.extension ? null : match[groupCount--];
+      
+      String controller = route.controller, action = route.action;
+      
+      Map<String, String> namedParams;
+      List<String> otherParams;
+      
+      if(route.namedParamsCount != 0) {
+        // set params
+        namedParams = new Map();
+        int group = 1;
+        for (String paramName in route.namedParams) {
+          String value = match[group++];
+          if(value != null && value.isNotEmpty) {
+            namedParams[paramName] = value;
+          }
+        }
+        
+        // Replace controller and action if needed
+        if (namedParams.containsKey('controller')) {
+          controller = _routesTranslations.untranslate(namedParams['controller'], lang);
+          controller = controller[0].toUpperCase() + controller.substring(1);
+          // Should we remove it ?
+          namedParams.remove('controller');
+        }
+        if (namedParams.containsKey('action')) {
+          action = _routesTranslations.untranslate(namedParams['action'], lang);
+          // Should we remove it ?
+          namedParams.remove('action');
+        }
+        
+        if (namedParams.isEmpty) {
+          namedParams = null;
+        }
+        
+        // The only not-named param can be /* (I think)
+        if (group == groupCount) {
+          otherParams = match[group].split('/');
+        }
+      }
+      
+      return new Route(all, controller, action, namedParams, otherParams, extension);
+    }
   }
 }

@@ -7,14 +7,18 @@ class RouterRoute {
   /// Action name
   final String action;
   
-  /// Number of named params in this route
-  final List<String> paramsNames;
+  /// Optionnal extension
+  final bool extension;
   
+  /// Number of named params in this route
+  final List<String> namedParams;
+  
+  /// Routes for each available langs
   final Map<String, RouterRouteLang> routes = {};
   
-  RouterRoute(this.controller, this.action, this.paramsNames);
+  RouterRoute(this.controller, this.action, this.extension, this.namedParams);
   
-  int get paramsCount => paramsNames.length;
+  int get namedParamsCount => namedParams.length;
   
   RouterRouteLang operator [](String lang) => routes[lang];
   operator []=(String lang, RouterRouteLang route) => routes[lang]=route;
@@ -30,4 +34,6 @@ class RouterRouteLang {
   
   RouterRouteLang(this.regExp, String strf):
       this.strf = strf == '/' ? '/' : strf.replaceFirst(new RegExp(r'\/+$'),'');
+  
+  Match match(String input) => regExp.firstMatch(input);
 }
