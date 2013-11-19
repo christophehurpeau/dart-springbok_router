@@ -7,6 +7,14 @@ part './routes_translations.dart';
 final regExpStartingSlash = new RegExp(r'^/+');
 final regExpEndingSlash = new RegExp(r'/+$');
 
+class RouteNotFoundException implements Exception{
+  final String path;
+  
+  RouteNotFoundException(this.path);
+  
+  String toString() => "This path was not found : ${this.path}";
+}
+
 class Router {
   final Map<String, RouterRoute> _routes = {};
   final RoutesTranslations _routesTranslations;
@@ -84,6 +92,13 @@ class Router {
             .replaceAll('-',r'\-')
             .replaceAll('*',r'(.*)')
             .replaceAll('(',r'(?:');
+        
+        if (specialEnd) {
+          routeLangRegExp = routeLangRegExp + r'(?:/([^\.]*))?';
+        } else if (specialEnd2) {
+          routeLangRegExp = routeLangRegExp.substring(0, routeLangRegExp.length - 2)
+              + r'(?:/([^\.]*))?' + routeLangRegExp.substring(routeLangRegExp.length - 2);
+        }
         
         final String extensionRegExp = extension == null ? '': 
           (extension == 'html' ? r'(?:\.(html))?': r'\.(' + '$extension)');
@@ -173,12 +188,14 @@ class Router {
         }
         
         // The only not-named param can be /* (I think)
-        if (group == groupCount) {
+        if (group == groupCount && match[group] != null) {
           otherParams = match[group].split('/');
         }
       }
       
       return new Route(all, controller, action, namedParams, otherParams, extension);
     }
+    
+    throw new RouteNotFoundException(all);
   }
 }
