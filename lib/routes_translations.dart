@@ -11,8 +11,8 @@ class RoutesTranslations{
           _translations['>$lang']=new Map<String,String>();
           _translations['$lang>']=new Map<String,String>();
         }
-        _translations['>$lang'][key] = translation;
-        _translations['$lang>'][translation] = key;
+        _translations['>$lang'][key.toLowerCase()] = translation;
+        _translations['$lang>'][translation.toLowerCase()] = key;
       });
     });
   }
