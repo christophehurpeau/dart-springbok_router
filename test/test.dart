@@ -3,9 +3,11 @@ import 'package:unittest/unittest.dart';
 import 'package:yaml/yaml.dart' as Yaml;
 
 import 'package:springbok_router/router.dart';
+import '../example/routes.dart';
+
 
 void main(){
-  String routesConfig = new File('../example/routes.yaml').readAsStringSync();
+  //String routesConfig = new File('../example/routes.yaml').readAsStringSync();
   String routesLangsConfig = new File('../example/routesLangs.yaml').readAsStringSync();
   
   RoutesTranslations rt = new RoutesTranslations(Yaml.loadYaml(routesLangsConfig));
@@ -16,7 +18,7 @@ void main(){
   });
   
   
-  Router router = new Router(rt, Yaml.loadYaml(routesConfig), ['en', 'fr']);
+  Router router = createRouter();
   
   test('Simple route',(){
     RouterRoute rr = router.get('/');
@@ -33,22 +35,36 @@ void main(){
   });
   
   test('Common route', (){
-    RouterRoute rr = router.get('/:controller(/:action/*)?');
+    RouterRoute rrs = router.get('defaultSimple');
+    assert(rrs != null);
+    expect(rrs.controller, 'Site');
+    expect(rrs.action, 'index');
+    expect(rrs.namedParamsCount, 0);
+    var rsen = rrs['en'];
+    expect(rsen.regExp.pattern,r'^(?:\.(html))?$');
+    expect(rsen.strf,'/%s');
+    var rsfr = rrs['fr'];
+    expect(rsfr.regExp.pattern,r'^(?:\.(html))?$');
+    expect(rsfr.strf,'/%s');
+    
+    RouterRoute rr = router.get('default');
     assert(rr != null);
     expect(rr.controller, 'Site');
     expect(rr.action, 'index');
-    expect(rr.namedParamsCount, 2);
-    expect(rr.namedParams, ['controller', 'action']);
+    expect(rr.namedParamsCount, 1);
+    expect(rr.namedParams, ['action']);
     var en = rr['en'];
-    expect(en.regExp.pattern,r'^/([^/\.]+)(?:/([^/\.]+)(?:/([^\.]*))?)?(?:\.(html))?$');
+    //expect(en.regExp.pattern,r'^/([^/\.]+)(?:/([^/\.]+)(?:/([^\.]*))?)?(?:\.(html))?$');
+    expect(en.regExp.pattern,r'^/([^/\.]+)(?:/([^\.]*))?(?:\.(html))?$');
     expect(en.strf,'/%s/%s%s');
     var fr = rr['fr'];
-    expect(fr.regExp.pattern,r'^/([^/\.]+)(?:/([^/\.]+)(?:/([^\.]*))?)?(?:\.(html))?$');
+    //expect(fr.regExp.pattern,r'^/([^/\.]+)(?:/([^/\.]+)(?:/([^\.]*))?)?(?:\.(html))?$');
+    expect(en.regExp.pattern,r'^/([^/\.]+)(?:/([^\.]*))?(?:\.(html))?$');
     expect(fr.strf,'/%s/%s%s');
   });
   
   test('Named param route', (){
-    RouterRoute rr = router.get('/post/:id-:slug');
+    RouterRoute rr = router.get('postView');
     assert(rr != null);
     expect(rr.controller, 'Post');
     expect(rr.action, 'view');

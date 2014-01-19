@@ -1,6 +1,37 @@
 part of router;
 
-class RouterRoute {
+class _RouterRouteCommon {
+
+  /// Named params in this route
+  final List<String> namedParams;
+
+  /// Routes for each available langs
+  final Map<String, RouterRouteLang> routes = {};
+  
+  _RouterRouteCommon(this.namedParams);
+  
+  int get namedParamsCount => namedParams.length;
+  
+  RouterRouteLang operator [](String lang) => routes[lang];
+  operator []=(String lang, RouterRouteLang route) => routes[lang]=route;
+}
+
+class RouterRouteSegment extends _RouterRouteCommon {
+
+  /// Routes
+  final List<_RouterRouteCommon> subRoutes = [];
+  
+  /// Default route, if no other is found. Can be null
+  RouterRoute _defaultRoute;
+  
+  RouterRoute get defaultRoute => _defaultRoute;
+  
+  RouterRouteSegment(List<String> namedParams) : super(namedParams);
+  
+  setDefaultRoute(RouterRoute defaultRoute) => _defaultRoute = defaultRoute;
+}
+
+class RouterRoute extends _RouterRouteCommon {
   /// Controller name
   final String controller;
   
@@ -9,19 +40,9 @@ class RouterRoute {
   
   /// Optionnal extension
   final bool extension;
-  
-  /// Number of named params in this route
-  final List<String> namedParams;
-  
-  /// Routes for each available langs
-  final Map<String, RouterRouteLang> routes = {};
-  
-  RouterRoute(this.controller, this.action, this.extension, this.namedParams);
-  
-  int get namedParamsCount => namedParams.length;
-  
-  RouterRouteLang operator [](String lang) => routes[lang];
-  operator []=(String lang, RouterRouteLang route) => routes[lang]=route;
+
+  RouterRoute(this.controller, this.action, this.extension, List<String> namedParams)
+    : super(namedParams);
 }
 
 /// A representation of a route for a specific lang
