@@ -1,6 +1,6 @@
 name: springbok_router
 author: Christophe Hurpeau <christophe@hurpeau.com>
-version: 0.2.0
+version: 0.2.2
 homepage: https://github.com/christophehurpeau/dart-springbok_router
 description: Springbok Router for Dart
 documentation: https://github.com/christophehurpeau/dart-springbok_router/wiki

@@ -10,9 +10,9 @@ final regExpEndingSlash = new RegExp(r'/+$');
 
 class RouteNotFoundException implements Exception{
   final String path;
-  
+
   RouteNotFoundException(this.path);
-  
+
   String toString() => "This path was not found : ${this.path}";
 }
 
@@ -20,46 +20,47 @@ class Router {
   final Map<String, RouterRoute> _routesMap = {};
   final List<_RouterRouteCommon> _routes = [];
   final RoutesTranslations _routesTranslations;
-  
+
   // tests only
   _RouterRouteCommon get(String key) => _routesMap[key];
-  
+
   Router(this._routesTranslations);
-  
+
   _addRoute(String routeKey, _RouterRouteCommon route) {
     if (route is RouterRoute) {
       _addInternalRoute(routeKey, route);
     }
     _routes.add(route);
   }
-  
+
   _addInternalRoute(String routeKey, RouterRoute route) {
     assert(!_routesMap.containsKey(routeKey));
     _routesMap[routeKey] = route;
   }
-  
-  
+
+
   Route find(String path, [String lang = 'en']){
     path = '/' + path.trim().replaceFirst(regExpStartingSlash,'').replaceFirst(regExpEndingSlash,'');
-    
+
     return _findRoute(_routes, path, path, lang);
   }
-  
+
   Route _findRoute(Iterable<_RouterRouteCommon> routes, String completePath, String path, String lang, [Map<String, String> namedParams]) {
+    assert(lang != null);
     for(_RouterRouteCommon route_common in routes) {
       RouterRouteLang routeLang = route_common[lang];
       assert(routeLang != null);
-      
+
       Match match = routeLang.match(path);
       if (match == null) continue;
-      
+
       int groupCount = match.groupCount;
-      
+
       if (route_common is RouterRouteSegment) {
         RouterRouteSegment route = route_common;
-        
+
         final String restOfThePath = match[groupCount--];
-        
+
         //Copy/paste... argh I hate that !
 
         if(route.namedParamsCount != 0) {
@@ -67,7 +68,7 @@ class Router {
           if (namedParams == null) {
             namedParams = new Map();
           }
-          
+
           int group = 1;
           for (String paramName in route.namedParams) {
             String value = match[group++];
@@ -79,7 +80,7 @@ class Router {
               namedParams = null;
             }
           }
-          
+
           if (route.defaultRoute != null) {
             try {
               return _findRoute(route.subRoutes, completePath, restOfThePath, lang, namedParams);
@@ -95,38 +96,38 @@ class Router {
         return _createRoute(completePath, lang, route, match, groupCount, namedParams);
       }
     }
-    
+
     throw new RouteNotFoundException(path);
   }
-  
-  
+
+
   Route _createRoute(String completePath, String lang, RouterRoute route, Match match, int groupCount, Map namedParams){
     int group = 1;
 
     final extension = groupCount == 0 || !route.extension ? null : match[groupCount--];
-    
+
     String controller = route.controller, action = route.action;
-    
+
     List<String> otherParams;
-    
+
     if(route.namedParamsCount != 0) {
       // set params
       if (namedParams == null) {
         namedParams = new Map();
       }
-      
+
       for (String paramName in route.namedParams) {
         String value = match[group++];
         if(value != null && value.isNotEmpty) {
           namedParams[paramName] = value;
         }
       }
-      
+
       if (namedParams.isEmpty) {
         namedParams = null;
       }
     }
-    
+
     if (namedParams != null) {
       // Replace controller and action if needed
       if (namedParams.containsKey('controller')) {
@@ -140,18 +141,18 @@ class Router {
         // Should we remove it ?
         namedParams.remove('action');
       }
-      
+
       if (namedParams.isEmpty) {
         namedParams = null;
       }
     }
-    
-    
+
+
     // The only not-named param can be /*
     if (group == groupCount && match[group] != null) {
       otherParams = match[group].split('/');
     }
-    
+
     return new Route(completePath, controller, action, namedParams, otherParams, extension);
   }
 }
