@@ -1,0 +1,279 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>Router class / router Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="router" data-type="Router">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../router.html">router</a> &rsaquo; <a href="../router/Router.html">Router</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>Router</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class Router {
+ final Map&lt;String, RouterRoute&gt; _routesMap = {};
+ final List&lt;_RouterRouteCommon&gt; _routes = [];
+ final RoutesTranslations _routesTranslations;
+
+ // tests only
+ _RouterRouteCommon get(String key) =&gt; _routesMap[key];
+
+ Router(this._routesTranslations);
+
+ _addRoute(String routeKey, _RouterRouteCommon route) {
+   if (route is RouterRoute) {
+     _addInternalRoute(routeKey, route);
+   }
+   _routes.add(route);
+ }
+
+ _addInternalRoute(String routeKey, RouterRoute route) {
+   assert(!_routesMap.containsKey(routeKey));
+   _routesMap[routeKey] = route;
+ }
+
+
+ Route find(String path, [String lang = 'en']){
+   path = '/' + path.trim().replaceFirst(regExpStartingSlash,'').replaceFirst(regExpEndingSlash,'');
+
+   return _findRoute(_routes, path, path, lang);
+ }
+
+ Route _findRoute(Iterable&lt;_RouterRouteCommon&gt; routes, String completePath, String path, String lang, [Map&lt;String, String&gt; namedParams]) {
+   assert(lang != null);
+   for(_RouterRouteCommon route_common in routes) {
+     RouterRouteLang routeLang = route_common[lang];
+     assert(routeLang != null);
+     print('trying ${routeLang.regExp}');
+
+     Match match = routeLang.match(path);
+     if (match == null) continue;
+
+     int groupCount = match.groupCount;
+
+     if (route_common is RouterRouteSegment) {
+       RouterRouteSegment route = route_common;
+
+       final String restOfThePath = match[groupCount--];
+
+       //Copy/paste... argh I hate that !
+
+       if(route.namedParamsCount != 0) {
+         // set params
+         if (namedParams == null) {
+           namedParams = new Map();
+         }
+
+         int group = 1;
+         for (String paramName in route.namedParams) {
+           String value = match[group++];
+           if(value != null &amp;&amp; value.isNotEmpty) {
+             namedParams[paramName] = value;
+           }
+
+           if (namedParams.isEmpty) {
+             namedParams = null;
+           }
+         }
+
+         if (route.defaultRoute != null) {
+           try {
+             return _findRoute(route.subRoutes, completePath, restOfThePath, lang, namedParams);
+           } on RouteNotFoundException catch (e) {
+             return _createRoute(completePath, lang, route.defaultRoute, null, 0, namedParams);
+           }
+         } else {
+           return _findRoute(route.subRoutes, completePath, restOfThePath, lang, namedParams);
+         }
+       }
+     } else {
+       RouterRoute route = route_common as RouterRoute;
+       return _createRoute(completePath, lang, route, match, groupCount, namedParams);
+     }
+   }
+
+   throw new RouteNotFoundException(path);
+ }
+
+
+ Route _createRoute(String completePath, String lang, RouterRoute route, Match match, int groupCount, Map namedParams){
+   int group = 1;
+
+   final extension = groupCount == 0 || route.extension == null ? null : match[groupCount--];
+
+   String controller = route.controller, action = route.action;
+
+   List&lt;String&gt; otherParams;
+
+   if(route.namedParamsCount != 0) {
+     // set params
+     if (namedParams == null) {
+       namedParams = new Map();
+     }
+
+     for (String paramName in route.namedParams) {
+       String value = match[group++];
+       if(value != null &amp;&amp; value.isNotEmpty) {
+         namedParams[paramName] = value;
+       }
+     }
+
+     if (namedParams.isEmpty) {
+       namedParams = null;
+     }
+   }
+
+   if (namedParams != null) {
+     // Replace controller and action if needed
+     if (namedParams.containsKey('controller')) {
+       controller = _routesTranslations.untranslate(namedParams['controller'], lang);
+       controller = controller[0].toUpperCase() + controller.substring(1);
+       // Should we remove it ?
+       namedParams.remove('controller');
+     }
+     if (namedParams.containsKey('action')) {
+       action = _routesTranslations.untranslate(namedParams['action'], lang);
+       // Should we remove it ?
+       namedParams.remove('action');
+     }
+
+     if (namedParams.isEmpty) {
+       namedParams = null;
+     }
+   }
+
+
+   // The only not-named param can be /*
+   if (group == groupCount &amp;&amp; match[group] != null) {
+     otherParams = match[group].split('/');
+   }
+
+   return new Route(completePath, controller, action, namedParams, otherParams, extension);
+ }
+
+ String createLink(String lang, String routeKey, { List params,
+                             String ext, String query, String hash }) {
+   RouterRoute route = _routesMap[routeKey];
+
+   String plus = '';
+   if (ext != null) {
+     plus = '.$ext';
+   } else if (route.extension != null) {
+
+   }
+       (ext == null ? '' : '.$ext')
+     + '';
+
+   String link = route.routes[lang].strf;
+   link = stringFormat(link, params.map(
+       (param) =&gt; _routesTranslations.translate(param, lang)));
+   return (link == '/' ? link : link.replaceFirst(regExpEndingSlash, '')) + plus;
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="">
+<button class="show-code">Code</button>
+new <strong>Router</strong>(<a href="../router/RoutesTranslations.html">RoutesTranslations</a> _routesTranslations) <a class="anchor-link" href="#"
+              title="Permalink to Router.Router">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Creates a new <code>Object</code> instance.</p>
+<p><code>Object</code> instances have no meaningful state, and are only useful
+through their identity. An <code>Object</code> instance is equal to itself
+only.</p>
+<div class="docs-inherited-from">docs inherited from Object </div></div>
+<pre class="source">
+Router(this._routesTranslations);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="createLink">
+<button class="show-code">Code</button>
+String <strong>createLink</strong>(String lang, String routeKey, {List params, String ext, String query, String hash}) <a class="anchor-link" href="#createLink"
+              title="Permalink to Router.createLink">#</a></h4>
+<div class="doc">
+<pre class="source">
+String createLink(String lang, String routeKey, { List params,
+                           String ext, String query, String hash }) {
+ RouterRoute route = _routesMap[routeKey];
+
+ String plus = '';
+ if (ext != null) {
+   plus = '.$ext';
+ } else if (route.extension != null) {
+
+ }
+     (ext == null ? '' : '.$ext')
+   + '';
+
+ String link = route.routes[lang].strf;
+ link = stringFormat(link, params.map(
+     (param) =&gt; _routesTranslations.translate(param, lang)));
+ return (link == '/' ? link : link.replaceFirst(regExpEndingSlash, '')) + plus;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="find">
+<button class="show-code">Code</button>
+<a href="../router/Route.html">Route</a> <strong>find</strong>(String path, [String lang = 'en']) <a class="anchor-link" href="#find"
+              title="Permalink to Router.find">#</a></h4>
+<div class="doc">
+<pre class="source">
+Route find(String path, [String lang = 'en']){
+ path = '/' + path.trim().replaceFirst(regExpStartingSlash,'').replaceFirst(regExpEndingSlash,'');
+
+ return _findRoute(_routes, path, path, lang);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="get">
+<button class="show-code">Code</button>
+<a href="../router/_RouterRouteCommon.html">_RouterRouteCommon</a> <strong>get</strong>(String key) <a class="anchor-link" href="#get"
+              title="Permalink to Router.get">#</a></h4>
+<div class="doc">
+<pre class="source">
+_RouterRouteCommon get(String key) =&gt; _routesMap[key];
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2014-02-10 18:42:25.441</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

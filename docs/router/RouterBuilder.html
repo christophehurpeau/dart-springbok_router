@@ -1,0 +1,387 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>RouterBuilder class / router Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="router" data-type="RouterBuilder">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../router.html">router</a> &rsaquo; <a href="../router/RouterBuilder.html">RouterBuilder</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>RouterBuilder</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<pre class="source">
+class RouterBuilder {
+ final Router router;
+
+ final List&lt;String&gt; _allLangs;
+
+
+ final RegExp regExpNamedParam = new RegExp(r'(\(\?)?\:([a-zA-Z_]+)');
+ final RegExp translatableRoutePart = new RegExp(r'/([a-zA-Z\_]+)');
+ final RegExp translatableRouteNamedParamValue = new RegExp(r'^[a-zA-Z\|\_]+$');
+
+ final RoutesTranslations _routesTranslations;
+
+ RouterBuilder(RoutesTranslations routesTranslations, this._allLangs)
+     : _routesTranslations = routesTranslations,
+       router = new Router(routesTranslations);
+
+ String translate(String lang, String string) {
+   String lstring = string.toLowerCase();
+   String translation = _routesTranslations.translate(string, lang);
+   assert(translation != null);
+   return translation;
+ }
+
+ fromMap(Map&lt;String, List&gt; routes) {
+   routes.forEach((String routeKey, List route){
+     // route: [ 'Site.index', { 'namedParam': '...' }, { 'fr': 'special route for lang fr' }, 'extension' ]
+
+     add(routeKey, routeKey, route[0],
+         namedParamsDefinition: route.length &gt; 1 ? route[1] : null,
+         routeLangs: route.length &gt; 2 ? (route[2] == null ? {} : route[2]) : {},
+         extension: route.length &gt; 3 ? route[3] : null);
+   });
+ }
+
+ // TODO next step : pass a Type !
+ void add(String routeKey, String routeUrl,
+          String controllerAndActionSeparatedByDot,
+     { Map&lt;String, String&gt; namedParamsDefinition,
+       Map&lt;String, String&gt; routeLangs,
+       String extension
+     }) {
+
+   var route = _createRoute(false, null,routeUrl, controllerAndActionSeparatedByDot, namedParamsDefinition, routeLangs, extension);
+   router._addRoute(routeKey, route);
+ }
+
+ void addSegment(String routeUrl, { Map&lt;String, String&gt; namedParamsDefinition,
+         Map&lt;String, String&gt; routeLangs,
+         buildSegment(RouterBuilderSegment segment)}) {
+   RouterRouteSegment route = _createRouteSegment(null, routeUrl, namedParamsDefinition, routeLangs);
+   var segment = new RouterBuilderSegment(this, route, null);
+   buildSegment(segment);
+   router._addRoute(null, route);
+ }
+
+ _RouterRouteCommon _createRouteSegment(RouterRouteSegment parent, String routeUrl, Map&lt;String, String&gt; namedParamsDefinition,
+              Map&lt;String, String&gt; routeLangs) {
+   return _createRoute(true, parent, routeUrl, null, namedParamsDefinition, routeLangs, null);
+ }
+
+ _RouterRouteCommon _createRoute(bool segment, RouterRouteSegment parent, String routeUrl, String controllerAndActionSeparatedByDot, Map&lt;String, String&gt; namedParamsDefinition,
+              Map&lt;String, String&gt; routeLangs, String extension) {
+   List&lt;String&gt; controllerAndAction;
+   if (!segment) {
+     controllerAndAction = controllerAndActionSeparatedByDot.split('.');
+     assert(controllerAndAction.length == 2);
+   }
+
+   if (routeLangs == null) {
+     routeLangs = {};
+   }
+
+   // -- Route langs --
+
+   if (routeLangs.isNotEmpty) {
+     for (String lang in _allLangs) {
+       if (!routeLangs.containsKey(lang)) {
+         if (lang == 'en') routeLangs['en'] = routeUrl;
+         else throw new Exception('Missing lang "$lang" for route "$routeUrl"');
+       }
+     }
+   } else {
+     if (!translatableRoutePart.hasMatch(routeUrl)) {
+       for (String lang in _allLangs) routeLangs[lang] = routeUrl;
+     } else {
+       for (String lang in _allLangs) {
+         routeLangs[lang] = routeUrl.replaceAllMapped(translatableRoutePart,
+             (Match m) =&gt; '/'+translate(lang,m[1]));
+       }
+     }
+   }
+
+   var paramNames = &lt;String&gt;[];
+   regExpNamedParam.allMatches(routeLangs[_allLangs[0]])
+     .forEach((Match m) =&gt; paramNames.add(m[2]));
+
+   var finalRoute = segment ? new RouterRouteSegment(paramNames)
+       : new RouterRoute(controllerAndAction[0], controllerAndAction[1], extension, paramNames);
+
+   routeLangs.forEach((String lang, String routeLang){
+     bool specialEnd = false, specialEnd2 = false;
+     String routeLangRegExp;
+
+     if (!segment &amp;&amp; (specialEnd = routeLang.endsWith('/*'))) {
+       routeLangRegExp = routeLang.substring(0, routeLang.length-2);
+     } else if (!segment &amp;&amp; (specialEnd2 = routeLang.endsWith(r'/*)?'))) {
+       routeLangRegExp = routeLang.substring(0, routeLang.length-4)
+           + routeLang.substring(routeLang.length-2);
+     } else {
+       routeLangRegExp = routeLang;
+     }
+
+     routeLangRegExp = routeLangRegExp
+       .replaceAll('-',r'\-')
+       .replaceAll('*',r'(.*)')
+       .replaceAll('(',r'(?:');
+
+     if (specialEnd) {
+       routeLangRegExp = routeLangRegExp + r'(?:/([^\.]*))?';
+     } else if (specialEnd2) {
+       routeLangRegExp = routeLangRegExp.substring(0, routeLangRegExp.length - 2)
+           + r'(?:/([^\.]*))?' + routeLangRegExp.substring(routeLangRegExp.length - 2);
+     }
+
+     final String extensionRegExp = segment || extension == null ? '':
+       (extension == 'html' ? r'(?:\.(html))?': r'\.(' + '$extension)');
+
+     var replacedRegExp = routeLangRegExp.replaceAllMapped(regExpNamedParam,(Match m){
+       if (m[1] != null) return m[0];
+
+       if (namedParamsDefinition != null &amp;&amp; namedParamsDefinition.containsKey(m[2])) {
+         var paramDefVal = namedParamsDefinition[m[2]];
+         if (paramDefVal is Map) {
+           paramDefVal = paramDefVal[lang];
+           assert(paramDefVal != null);
+         } else {
+           if (translatableRouteNamedParamValue.hasMatch(paramDefVal)) {
+             paramDefVal = paramDefVal.split('|')
+                 .map((String s) =&gt; translate(lang, s)).join('|');
+           }
+         }
+         return paramDefVal == 'id' ? r'([0-9]+)' : '(' + paramDefVal.replaceAll('(','(?:') + ')';
+       }
+
+       if (m[2] == 'id') {
+         return r'([0-9]+)';
+       }
+
+       return r'([^/\.]+)';
+     });
+     var routeLangStrf = routeLang.replaceAll(new RegExp(r'(\:[a-zA-Z_]+)'),'%s')
+         .replaceAll(new RegExp(r'[\?\(\)]+'),'')
+         .replaceAll('/*','%s')
+         .trim()
+         .replaceFirst(regExpEndingSlash,'');
+
+     if (parent != null) {
+       routeLangStrf = parent.routes[lang].strf + routeLangStrf;
+     }
+
+     if(routeLangStrf == '') {
+       routeLangStrf = '/';
+     }
+     finalRoute[lang] = new RouterRouteLang(
+         new RegExp('^${replacedRegExp}${extensionRegExp}' + ( segment ? '(.*)\$' : '\$')),
+         routeLangStrf
+     );
+   });
+
+   return finalRoute;
+ }
+
+ addDefaultRoutes() {
+   addSegment('/:controller', buildSegment: (RouterBuilderSegment segment) {
+     segment
+       ..add('default', '/:action/*', 'Site.index', extension: 'html')
+       ..defaultRoute('defaultSimple', 'Site.index', extension: 'html');
+   });
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="">
+<button class="show-code">Code</button>
+new <strong>RouterBuilder</strong>(<a href="../router/RoutesTranslations.html">RoutesTranslations</a> routesTranslations, List&lt;String&gt; _allLangs) <a class="anchor-link" href="#"
+              title="Permalink to RouterBuilder.RouterBuilder">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Creates a new <code>Object</code> instance.</p>
+<p><code>Object</code> instances have no meaningful state, and are only useful
+through their identity. An <code>Object</code> instance is equal to itself
+only.</p>
+<div class="docs-inherited-from">docs inherited from Object </div></div>
+<pre class="source">
+RouterBuilder(RoutesTranslations routesTranslations, this._allLangs)
+   : _routesTranslations = routesTranslations,
+     router = new Router(routesTranslations);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="regExpNamedParam">
+<button class="show-code">Code</button>
+final RegExp         <strong>regExpNamedParam</strong> <a class="anchor-link"
+            href="#regExpNamedParam"
+            title="Permalink to RouterBuilder.regExpNamedParam">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final RegExp regExpNamedParam = new RegExp(r'(\(\?)?\:([a-zA-Z_]+)')
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="router">
+<button class="show-code">Code</button>
+final <a href="../router/Router.html">Router</a>         <strong>router</strong> <a class="anchor-link"
+            href="#router"
+            title="Permalink to RouterBuilder.router">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final Router router
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="translatableRouteNamedParamValue">
+<button class="show-code">Code</button>
+final RegExp         <strong>translatableRouteNamedParamValue</strong> <a class="anchor-link"
+            href="#translatableRouteNamedParamValue"
+            title="Permalink to RouterBuilder.translatableRouteNamedParamValue">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final RegExp translatableRouteNamedParamValue = new RegExp(r'^[a-zA-Z\|\_]+$')
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="translatableRoutePart">
+<button class="show-code">Code</button>
+final RegExp         <strong>translatableRoutePart</strong> <a class="anchor-link"
+            href="#translatableRoutePart"
+            title="Permalink to RouterBuilder.translatableRoutePart">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final RegExp translatableRoutePart = new RegExp(r'/([a-zA-Z\_]+)')
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="add">
+<button class="show-code">Code</button>
+void <strong>add</strong>(String routeKey, String routeUrl, String controllerAndActionSeparatedByDot, {Map&lt;String, String&gt; namedParamsDefinition, Map&lt;String, String&gt; routeLangs, String extension}) <a class="anchor-link" href="#add"
+              title="Permalink to RouterBuilder.add">#</a></h4>
+<div class="doc">
+<pre class="source">
+void add(String routeKey, String routeUrl,
+        String controllerAndActionSeparatedByDot,
+   { Map&lt;String, String&gt; namedParamsDefinition,
+     Map&lt;String, String&gt; routeLangs,
+     String extension
+   }) {
+
+ var route = _createRoute(false, null,routeUrl, controllerAndActionSeparatedByDot, namedParamsDefinition, routeLangs, extension);
+ router._addRoute(routeKey, route);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="addDefaultRoutes">
+<button class="show-code">Code</button>
+dynamic <strong>addDefaultRoutes</strong>() <a class="anchor-link" href="#addDefaultRoutes"
+              title="Permalink to RouterBuilder.addDefaultRoutes">#</a></h4>
+<div class="doc">
+<pre class="source">
+addDefaultRoutes() {
+ addSegment('/:controller', buildSegment: (RouterBuilderSegment segment) {
+   segment
+     ..add('default', '/:action/*', 'Site.index', extension: 'html')
+     ..defaultRoute('defaultSimple', 'Site.index', extension: 'html');
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="addSegment">
+<button class="show-code">Code</button>
+void <strong>addSegment</strong>(String routeUrl, {Map&lt;String, String&gt; namedParamsDefinition, Map&lt;String, String&gt; routeLangs, buildSegment(<a href="../router/RouterBuilderSegment.html">RouterBuilderSegment</a> segment)}) <a class="anchor-link" href="#addSegment"
+              title="Permalink to RouterBuilder.addSegment">#</a></h4>
+<div class="doc">
+<pre class="source">
+void addSegment(String routeUrl, { Map&lt;String, String&gt; namedParamsDefinition,
+       Map&lt;String, String&gt; routeLangs,
+       buildSegment(RouterBuilderSegment segment)}) {
+ RouterRouteSegment route = _createRouteSegment(null, routeUrl, namedParamsDefinition, routeLangs);
+ var segment = new RouterBuilderSegment(this, route, null);
+ buildSegment(segment);
+ router._addRoute(null, route);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="fromMap">
+<button class="show-code">Code</button>
+dynamic <strong>fromMap</strong>(Map&lt;String, List&gt; routes) <a class="anchor-link" href="#fromMap"
+              title="Permalink to RouterBuilder.fromMap">#</a></h4>
+<div class="doc">
+<pre class="source">
+fromMap(Map&lt;String, List&gt; routes) {
+ routes.forEach((String routeKey, List route){
+   // route: [ 'Site.index', { 'namedParam': '...' }, { 'fr': 'special route for lang fr' }, 'extension' ]
+
+   add(routeKey, routeKey, route[0],
+       namedParamsDefinition: route.length &gt; 1 ? route[1] : null,
+       routeLangs: route.length &gt; 2 ? (route[2] == null ? {} : route[2]) : {},
+       extension: route.length &gt; 3 ? route[3] : null);
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="translate">
+<button class="show-code">Code</button>
+String <strong>translate</strong>(String lang, String string) <a class="anchor-link" href="#translate"
+              title="Permalink to RouterBuilder.translate">#</a></h4>
+<div class="doc">
+<pre class="source">
+String translate(String lang, String string) {
+ String lstring = string.toLowerCase();
+ String translation = _routesTranslations.translate(string, lang);
+ assert(translation != null);
+ return translation;
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2014-02-10 18:42:25.364</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

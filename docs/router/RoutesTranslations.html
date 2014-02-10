@@ -1,0 +1,152 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>RoutesTranslations class / router Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="router" data-type="RoutesTranslations">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../router.html">router</a> &rsaquo; <a href="../router/RoutesTranslations.html">RoutesTranslations</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>RoutesTranslations</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>Convert a simple conf file key=>value into a two-way translation map</p>
+<pre class="source">
+class RoutesTranslations{
+ final Map&lt;String, Map&lt;String, String&gt;&gt; _translations = {};
+ 
+ RoutesTranslations(Map&lt;String, dynamic&gt; translations){
+   translations.forEach((String key, Map&lt;String, String&gt; translations){
+     translations.forEach((String lang, String translation){
+       if (!_translations.containsKey('&gt;$lang')) {
+         _translations['&gt;$lang']=new Map&lt;String,String&gt;();
+         _translations['$lang&gt;']=new Map&lt;String,String&gt;();
+       }
+       _translations['&gt;$lang'][key.toLowerCase()] = translation;
+       _translations['$lang&gt;'][translation.toLowerCase()] = key;
+     });
+   });
+ }
+ 
+ String translate(String string, String lang){
+   string = string.toLowerCase();
+   if (!_translations.containsKey('&gt;$lang') || !_translations['&gt;$lang'].containsKey(string)) {
+     throw new Exception('Missing untranslation $string for lang $lang');
+   }
+   assert(_translations.containsKey('&gt;$lang'));
+   assert(_translations['&gt;$lang'].containsKey(string));
+   return _translations['&gt;$lang'][string];
+ }
+ 
+ String untranslate(String string, String lang){
+   string = string.toLowerCase();
+   if (!_translations.containsKey('$lang&gt;') || !_translations['$lang&gt;'].containsKey(string)) {
+     throw new Exception('Missing untranslation $string for lang $lang');
+   }
+   assert(_translations.containsKey('$lang&gt;'));
+   assert(_translations['$lang&gt;'].containsKey(string));
+   return _translations['$lang&gt;'][string];
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="">
+<button class="show-code">Code</button>
+new <strong>RoutesTranslations</strong>(Map&lt;String, dynamic&gt; translations) <a class="anchor-link" href="#"
+              title="Permalink to RoutesTranslations.RoutesTranslations">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Creates a new <code>Object</code> instance.</p>
+<p><code>Object</code> instances have no meaningful state, and are only useful
+through their identity. An <code>Object</code> instance is equal to itself
+only.</p>
+<div class="docs-inherited-from">docs inherited from Object </div></div>
+<pre class="source">
+RoutesTranslations(Map&lt;String, dynamic&gt; translations){
+ translations.forEach((String key, Map&lt;String, String&gt; translations){
+   translations.forEach((String lang, String translation){
+     if (!_translations.containsKey('&gt;$lang')) {
+       _translations['&gt;$lang']=new Map&lt;String,String&gt;();
+       _translations['$lang&gt;']=new Map&lt;String,String&gt;();
+     }
+     _translations['&gt;$lang'][key.toLowerCase()] = translation;
+     _translations['$lang&gt;'][translation.toLowerCase()] = key;
+   });
+ });
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="translate">
+<button class="show-code">Code</button>
+String <strong>translate</strong>(String string, String lang) <a class="anchor-link" href="#translate"
+              title="Permalink to RoutesTranslations.translate">#</a></h4>
+<div class="doc">
+<pre class="source">
+String translate(String string, String lang){
+ string = string.toLowerCase();
+ if (!_translations.containsKey('&gt;$lang') || !_translations['&gt;$lang'].containsKey(string)) {
+   throw new Exception('Missing untranslation $string for lang $lang');
+ }
+ assert(_translations.containsKey('&gt;$lang'));
+ assert(_translations['&gt;$lang'].containsKey(string));
+ return _translations['&gt;$lang'][string];
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="untranslate">
+<button class="show-code">Code</button>
+String <strong>untranslate</strong>(String string, String lang) <a class="anchor-link" href="#untranslate"
+              title="Permalink to RoutesTranslations.untranslate">#</a></h4>
+<div class="doc">
+<pre class="source">
+String untranslate(String string, String lang){
+ string = string.toLowerCase();
+ if (!_translations.containsKey('$lang&gt;') || !_translations['$lang&gt;'].containsKey(string)) {
+   throw new Exception('Missing untranslation $string for lang $lang');
+ }
+ assert(_translations.containsKey('$lang&gt;'));
+ assert(_translations['$lang&gt;'].containsKey(string));
+ return _translations['$lang&gt;'][string];
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2014-02-10 18:42:25.309</div>
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

@@ -1,0 +1,142 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>router Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="router">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="router.html">router</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>router</strong> library</h2>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="regExpEndingSlash">
+<button class="show-code">Code</button>
+final         <strong>regExpEndingSlash</strong> <a class="anchor-link"
+            href="#regExpEndingSlash"
+            title="Permalink to regExpEndingSlash">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final regExpEndingSlash = new RegExp(r'/+$')
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="regExpStartingSlash">
+<button class="show-code">Code</button>
+final         <strong>regExpStartingSlash</strong> <a class="anchor-link"
+            href="#regExpStartingSlash"
+            title="Permalink to regExpStartingSlash">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final regExpStartingSlash = new RegExp(r'^/+')
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="stringFormat">
+<button class="show-code">Code</button>
+String <strong>stringFormat</strong>(String string, List&lt;String&gt; args) <a class="anchor-link" href="#stringFormat"
+              title="Permalink to stringFormat">#</a></h4>
+<div class="doc">
+<p>http://code.google.com/p/dart/issues/detail?id=1694</p>
+<pre class="source">
+String stringFormat(String string, List&lt;String&gt; args) {
+ int i = 0;
+ return string.replaceAllMapped('%s', (Match m) =&gt; args[i++]);
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Classes</h3>
+          <div class="type">
+          <h4>
+            <a href="router/Route.html"><strong>Route</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/Router.html"><strong>Router</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RouterBuilder.html"><strong>RouterBuilder</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RouterBuilderSegment.html"><strong>RouterBuilderSegment</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RouterRoute.html"><strong>RouterRoute</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RouterRouteLang.html"><strong>RouterRouteLang</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RouterRouteSegment.html"><strong>RouterRouteSegment</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="router/RoutesTranslations.html"><strong>RoutesTranslations</strong></a>
+          </h4>
+          </div>
+          
+</div>
+<div>
+<h3>Exceptions</h3>
+          <div class="type">
+          <h4>
+            <a href="router/RouteNotFoundException.html"><strong>RouteNotFoundException</strong></a>
+          </h4>
+          </div>
+          
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          <div>This page was generated at 2014-02-10 18:42:25.269</div>
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        
