@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Dart-springbok router : Springbok Router for Dart" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Dart-springbok router</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/christophehurpeau/dart-springbok_router">View on GitHub</a>
+
+          <h1 id="project_title">Dart-springbok router</h1>
+          <h2 id="project_tagline">Springbok Router for Dart</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/christophehurpeau/dart-springbok_router/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/christophehurpeau/dart-springbok_router/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><a href="https://drone.io/github.com/christophehurpeau/dart-springbok_router/latest"><img src="https://drone.io/github.com/christophehurpeau/dart-springbok_router/status.png" alt="Build Status"></a></p>
+
+<h3>
+<a name="how-to-use" class="anchor" href="#how-to-use"><span class="octicon octicon-link"></span></a>How to use</h3>
+
+<pre><code>import 'dart:io';
+import 'dart:async';
+import 'package:springbok_router/router.dart';
+import 'package:yaml/yaml.dart';
+
+
+main(){
+  final RoutesTranslations routesTranslations = new RoutesTranslations(
+        loadYaml(new File('$configPath/routesTranslations.yaml').readAsStringSync()));
+  final Router router = new Router(routesTranslations,
+      loadYaml(new File('$configPath/routes.yaml').readAsStringSync()),
+      config['allLangs']);
+
+  HttpServer.bind(HOST, PORT).then((HttpServer server) {
+    server.listen((HttpRequest request) {
+      try {
+        Route route = router.find(request.uri.path);
+        // now you should have
+      } catch(e) {
+        // it the route was not found : e is RouteNotFoundException
+      }
+    });
+  });
+}
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Dart-springbok router maintained by <a href="https://github.com/christophehurpeau">christophehurpeau</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
