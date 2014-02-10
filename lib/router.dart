@@ -8,6 +8,12 @@ part './routes_translations.dart';
 final regExpStartingSlash = new RegExp(r'^/+');
 final regExpEndingSlash = new RegExp(r'/+$');
 
+/// http://code.google.com/p/dart/issues/detail?id=1694
+String stringFormat(String string, List<String> args) {
+  int i = 0;
+  return string.replaceAllMapped('%s', (Match m) => args[i++]);
+}
+
 class RouteNotFoundException implements Exception{
   final String path;
 
@@ -50,6 +56,7 @@ class Router {
     for(_RouterRouteCommon route_common in routes) {
       RouterRouteLang routeLang = route_common[lang];
       assert(routeLang != null);
+      print('trying ${routeLang.regExp}');
 
       Match match = routeLang.match(path);
       if (match == null) continue;
@@ -104,7 +111,7 @@ class Router {
   Route _createRoute(String completePath, String lang, RouterRoute route, Match match, int groupCount, Map namedParams){
     int group = 1;
 
-    final extension = groupCount == 0 || !route.extension ? null : match[groupCount--];
+    final extension = groupCount == 0 || route.extension == null ? null : match[groupCount--];
 
     String controller = route.controller, action = route.action;
 
@@ -154,5 +161,24 @@ class Router {
     }
 
     return new Route(completePath, controller, action, namedParams, otherParams, extension);
+  }
+
+  String createLink(String lang, String routeKey, { List params,
+                              String ext, String query, String hash }) {
+    RouterRoute route = _routesMap[routeKey];
+
+    String plus = '';
+    if (ext != null) {
+      plus = '.$ext';
+    } else if (route.extension != null) {
+
+    }
+        (ext == null ? '' : '.$ext')
+      + '';
+
+    String link = route.routes[lang].strf;
+    link = stringFormat(link, params.map(
+        (param) => _routesTranslations.translate(param, lang)));
+    return (link == '/' ? link : link.replaceFirst(regExpEndingSlash, '')) + plus;
   }
 }

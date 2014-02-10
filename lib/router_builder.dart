@@ -97,7 +97,7 @@ class RouterBuilder {
       .forEach((Match m) => paramNames.add(m[2]));
 
     var finalRoute = segment ? new RouterRouteSegment(paramNames)
-        : new RouterRoute(controllerAndAction[0], controllerAndAction[1], extension != null, paramNames);
+        : new RouterRoute(controllerAndAction[0], controllerAndAction[1], extension, paramNames);
 
     routeLangs.forEach((String lang, String routeLang){
       bool specialEnd = false, specialEnd2 = false;
