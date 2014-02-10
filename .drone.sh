@@ -10,6 +10,7 @@ dartanalyzer test/test.dart || exit 1
 echo "\n> Run tests"
 cd test/
 dart --enable-type-checks --enable-asserts test.dart || exit 1
+cd ..
 
 #echo "> Run build"
 #pub build || exit 1
