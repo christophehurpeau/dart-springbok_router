@@ -3,7 +3,7 @@ author: Christophe Hurpeau <christophe@hurpeau.com>
 version: 0.3.0
 homepage: https://github.com/christophehurpeau/dart-springbok_router
 description: Springbok Router for Dart
-documentation: https://github.com/christophehurpeau/dart-springbok_router/wiki
+documentation: http://christophehurpeau.github.io/dart-springbok_router/docs/
 environment:
   sdk: '>=1.1.0 <2.0.0'
 dependencies:
