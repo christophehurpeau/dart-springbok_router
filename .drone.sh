@@ -8,7 +8,8 @@ dartanalyzer lib/router.dart || exit 1
 dartanalyzer test/test.dart || exit 1
 
 echo "\n> Run tests"
-dart --enable-type-checks --enable-asserts test/test.dart || exit 1
+cd test/
+dart --enable-type-checks --enable-asserts test.dart || exit 1
 
 #echo "> Run build"
 #pub build || exit 1
