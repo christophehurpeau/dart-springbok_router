@@ -171,11 +171,9 @@ class Router {
     if (ext != null) {
       plus = '.$ext';
     } else if (route.extension != null) {
-
+      plus = '.${route.extension}';
     }
-        (ext == null ? '' : '.$ext')
-      + '';
-
+    
     String link = route.routes[lang].strf;
     link = stringFormat(link, params.map(
         (param) => _routesTranslations.translate(param, lang)));
