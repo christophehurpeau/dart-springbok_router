@@ -20,7 +20,7 @@ class RoutesTranslations{
   String translate(String string, String lang){
     string = string.toLowerCase();
     if (!_translations.containsKey('>$lang') || !_translations['>$lang'].containsKey(string)) {
-      throw new Exception('Missing untranslation $string for lang $lang');
+      throw new Exception('Missing translation $string for lang $lang');
     }
     assert(_translations.containsKey('>$lang'));
     assert(_translations['>$lang'].containsKey(string));
