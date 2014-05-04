@@ -6,7 +6,7 @@ class RouterBuilder {
   final List<String> _allLangs;
 
 
-  final RegExp regExpNamedParam = new RegExp(r'(\(\?)?\:([a-zA-Z_]+)');
+  final RegExp regExpNamedParam = new RegExp(r'(\(\?)?\:([a-zA-Z]+)');
   final RegExp translatableRoutePart = new RegExp(r'/([a-zA-Z\_]+)');
   final RegExp translatableRouteNamedParamValue = new RegExp(r'^[a-zA-Z\|\_]+$');
 
