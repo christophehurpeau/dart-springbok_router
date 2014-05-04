@@ -13,7 +13,8 @@ Router createRouter() {
     ..add('postView', '/post/:id-:slug', 'Post.view',
         namedParamsDefinition: {'slug': r'[A-Za-z\-]+'},
         extension: 'htm')
-
+    ..add('postWithDate', '/post(/:tagKey)?(/:date_:slug)', 'Post.view',
+        namedParamsDefinition: {'date': r'\d{4}\-\d{2}\-\d{2}'})
     ..addDefaultRoutes();
 
   return builder.router;
