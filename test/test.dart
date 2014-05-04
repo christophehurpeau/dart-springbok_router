@@ -86,10 +86,10 @@ void main(){
     expect(rr.namedParamsCount, 3);
     expect(rr.namedParams, ['tagKey', 'date', 'slug']);
     var en = rr['en'];
-    expect(en.regExp.pattern, r'^/post(?:/([^/.]+))?(?:/(\d{4}\-\d{2}\-\d{2})_([^/.]+))$');
+    expect(en.regExp.pattern, r'^/post(?:/([^/\.]+))?(?:/(\d{4}\-\d{2}\-\d{2})_([^/\.]+))$');
     expect(en.strf,'/post/%s/%s%s');
     var fr = rr['fr'];
-    expect(fr.regExp.pattern, r'^/article(?:\/([^/.]+))?(?:\/(\d{4}\-\d{2}\\-\d{2})_([^/.]+))$');
+    expect(fr.regExp.pattern, r'^/article(?:\/([^/\.]+))?(?:\/(\d{4}\-\d{2}\\-\d{2})_([^/\.]+))$');
     expect(fr.strf,'/article/%s/%s%s');
   });
   
